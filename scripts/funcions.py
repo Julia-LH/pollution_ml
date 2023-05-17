@@ -12,20 +12,22 @@ def calcula_distancia(punt_polucio, punts_meteo):
     distancies_df = pd.DataFrame(distancies)
     return distancies_df[distancies_df['distancia']==distancies_df['distancia'].min()].loc[0:].values.flatten().tolist()
 
-def omplir_buits(polucio_df, estacio):
-    estacio_df = polucio_df[polucio_df['nom estacio']==estacio]
-    estacio_df['no_dia'].fillna((estacio_df['no_dia'].shift() + estacio_df['no_dia'].shift(-1))/2, inplace=True)
-    estacio_df['no_dia'].fillna(method='ffill', inplace=True)
-    return estacio_df
+def omplir_buits(df, var):
+    #estacio_df = polucio_df[polucio_df['nom estacio']==estacio]
+    df.sort_values(by=['data'], axis=0, inplace=True)
+    df[var].fillna((df[var].shift() + df[var].shift(-1))/2, inplace=True)
+    df[var].fillna(method='ffill', inplace=True)
+    df[var].fillna(method='bfill', inplace=True)
+    return df
 
-def crear_dies_previs(variable, estacio_df):
-    variable_previ1 = variable + '_previ1'
-    variable_previ2 = variable + '_previ2'
-    estacio_df[variable_previ1] = estacio_df.sort_values(by=['data'], axis=0)[variable].shift(periods=-1)
-    estacio_df[variable_previ1].fillna(method='ffill', inplace=True)
-    estacio_df[variable_previ2] = estacio_df.sort_values(by=['data'], axis=0)[variable_previ1].shift(periods=-1)
-    estacio_df[variable_previ2].fillna(method='ffill', inplace=True)
-    return estacio_df
+def crear_dies_previs(df, var):
+    var_previ1 = var + '_previ1'
+    var_previ2 = var + '_previ2'
+    df[var_previ1] = df.sort_values(by=['data'], axis=0)[var].shift(periods=-1)
+    df[var_previ1].fillna(method='ffill', inplace=True)
+    df[var_previ2] = df.sort_values(by=['data'], axis=0)[var_previ1].shift(periods=-1)
+    df[var_previ2].fillna(method='ffill', inplace=True)
+    return df
 
 def split_train_test(estacio_df, train_percent):
     min_date = estacio_df.data.min()

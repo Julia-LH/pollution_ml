@@ -1,0 +1,10 @@
+#polucio
+pol_arxiu='datasets/qualitat_aire.csv'
+data_inici='2021-01-01'
+area_geo='municipi'
+nom_area='Barcelona'
+contaminant='NO'
+#meteo
+meteo_arxiu='datasets/meteo_test6.csv'
+var_arxiu='datasets/variables_meteo_reduit.csv'
+est_arxiu='datasets/estacions_meteo_polucio.csv'

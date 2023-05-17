@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Polucio:
 
-    def __init__(self, pol_arxiu, data_inici, area_geo, nom_area, contaminant) -> None:
+    def __init__(self, pol_arxiu, data_inici, area_geo, nom_area, contaminant):
         self.pol_arxiu = pol_arxiu
         self.data_inici = data_inici
         self.area_geo = area_geo
@@ -29,11 +29,15 @@ class Polucio:
         df = df[(df[self.area_geo]==self.nom_area) & (df[self.data.replace(' ', '_').lower()]>self.data_inici) & (df['contaminant']==self.contaminant)]
         return df.reset_index(drop=True)
 
+    def obtenir_nom_contaminant(self):
+        return self.contaminant + '_dia'
+
+    
     def transformar_pol_arxiu(self):
         df = self.obrir_pol_arxiu()
         mesures_hora = [x.replace(' ', '_').lower() for x in self.mesures_hora]
         variables_agrupacio = [x.replace(' ', '_').lower() for x in self.variables_agrupacio]
-        nom_contaminant = self.contaminant + '_dia'
+        nom_contaminant = self.obtenir_nom_contaminant()
         df[nom_contaminant] = df[mesures_hora].mean(axis=1)
         return df.drop(variables_agrupacio + mesures_hora, axis=1)
 
@@ -41,7 +45,7 @@ class Polucio:
 
 class Meteo:
 
-    def __init__(self, meteo_arxiu, var_arxiu, est_arxiu) -> None:
+    def __init__(self, meteo_arxiu, var_arxiu, est_arxiu):
         self.meteo_arxiu = meteo_arxiu
         self.data ='data_lectura'
         self.format_data = '%Y-%m-%d'
@@ -73,6 +77,7 @@ class Meteo:
         estacions = pd.read_csv(self.est_arxiu, usecols=['codi_meteo', 'nom_estacio'])
         df = df.groupby(self.meteo_columns_grup)[self.var_valors].mean().unstack(self.meteo_pivot_column).reset_index()
         df.rename(nom_variables, axis='columns', inplace=True)
+        print('longitud de meteo abans de merge amb nom estacio: {}'.format(len(df)))
         return df.merge(estacions, left_on='codi_estacio', right_on='codi_meteo')
         
 
