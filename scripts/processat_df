@@ -1,0 +1,13 @@
+import pandas as pd
+
+from classes import Polucio, Meteo
+from funcions import omplir_buits, crear_dies_previs, split_train_test
+
+
+if __name__ == '__main__':
+    polucio = Polucio(arxiu='qualitat_aire.csv', data_inici='2021-01-01', area_geo='municipi', nom_area='Barcelona', contaminant='NO')
+    polucio_df = polucio.transformar_arxiu()
+    meteo = Meteo(meteo_arxiu='meteo_dataset\meteo_test6.csv', var_arxiu='meteo_dataset/variables_meteo_reduit.csv', est_arxiu='meteo_dataset\estacions_meteo_polucio.csv')
+    meteo_df = meteo.transformar_arxiu()
+    df= polucio_df.merge(meteo_df, left_on=['data', 'nom_estacio'], right_on=['data_lectura', 'nom_estacio'])
+    print(df.head())
