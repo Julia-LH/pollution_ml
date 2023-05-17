@@ -3,8 +3,8 @@ from datetime import datetime
 
 class Polucio:
 
-    def __init__(self, arxiu, data_inici, area_geo, nom_area, contaminant) -> None:
-        self.arxiu = arxiu
+    def __init__(self, pol_arxiu, data_inici, area_geo, nom_area, contaminant) -> None:
+        self.pol_arxiu = pol_arxiu
         self.data_inici = data_inici
         self.area_geo = area_geo
         self.nom_area = nom_area    
@@ -22,63 +22,56 @@ class Polucio:
                              '19h', '20h', '21h', '22h', '23h', '24h'] 
 
     
-    def obrir_arxiu(self):
+    def obrir_pol_arxiu(self):
         date_parser = lambda x:datetime.strptime(x, self.format_data)
-        df = pd.read_csv(self.arxiu, usecols=self.columns, parse_dates=[self.data], date_parser=date_parser)
+        df = pd.read_csv(self.pol_arxiu, usecols=self.columns, parse_dates=[self.data], date_parser=date_parser)
         df.rename(columns=lambda x: x.replace(' ', '_').lower(), inplace=True)
         df = df[(df[self.area_geo]==self.nom_area) & (df[self.data.replace(' ', '_').lower()]>self.data_inici) & (df['contaminant']==self.contaminant)]
         return df.reset_index(drop=True)
 
-    def transformar_arxiu(self):
-        df = self.obrir_arxiu()
+    def transformar_pol_arxiu(self):
+        df = self.obrir_pol_arxiu()
         mesures_hora = [x.replace(' ', '_').lower() for x in self.mesures_hora]
         variables_agrupacio = [x.replace(' ', '_').lower() for x in self.variables_agrupacio]
         nom_contaminant = self.contaminant + '_dia'
         df[nom_contaminant] = df[mesures_hora].mean(axis=1)
         return df.drop(variables_agrupacio + mesures_hora, axis=1)
-    
-
-
-class Variables:
-
-    def __init__(self, arxiu):
-        self.arxiu = arxiu
-        self.columns = ['codi_variable', 'nom_variable']
-        self.dtypes={'codi_variable':'str'}
-
-    def obtenir_noms_variables(self):
-        df = pd.read_csv(self.arxiu, usecols=self.columns, dtype=self.dtypes)
-        return df.set_index('codi_variable')['nom_variable'].to_dict()
 
     
 
 class Meteo:
 
     def __init__(self, meteo_arxiu, var_arxiu, est_arxiu) -> None:
-        self.arxiu = meteo_arxiu
+        self.meteo_arxiu = meteo_arxiu
         self.data ='data_lectura'
         self.format_data = '%Y-%m-%d'
-        self.columns = ['codi_estacio', 'codi_variable', 'data_lectura', 'valor_lectura']
-        self.dtypes = {'codi_variable':'str'}
-        self.columns_grup = ['data_lectura', 'codi_variable', 'codi_estacio'] #
-        self.pivot_column = 'codi_variable'
+        self.meteo_columns = ['codi_estacio', 'codi_variable', 'data_lectura', 'valor_lectura']
+        self.meteo_dtypes = {'codi_variable':'str'}
+        self.meteo_columns_grup = ['data_lectura', 'codi_variable', 'codi_estacio'] #
+        self.meteo_pivot_column = 'codi_variable'
         self.var_arxiu = var_arxiu
-        self.valor_variables = 'valor_lectura'
+        self.var_columns = ['codi_variable', 'nom_variable']
+        self.var_dtypes={'codi_variable':'str'}
+        self.var_valors = 'valor_lectura'
         self.est_arxiu = est_arxiu
     
 
-    def obrir_arxiu(self):
+    def obrir_meteo_arxiu(self):
         date_parser = lambda x:datetime.strptime(x, self.format_data)
-        df = pd.read_csv(self.arxiu, usecols=self.columns, dtype=self.dtypes, parse_dates=[self.data], date_parser=date_parser)
+        df = pd.read_csv(self.meteo_arxiu, usecols=self.meteo_columns, dtype=self.meteo_dtypes, parse_dates=[self.data], date_parser=date_parser)
         return df.rename(columns=lambda x: x.replace(' ', '_').lower())
     
+    
+    def obtenir_noms_variables(self):
+        df = pd.read_csv(self.var_arxiu, usecols=self.var_columns, dtype=self.var_dtypes)
+        return df.set_index('codi_variable')['nom_variable'].to_dict()
 
-    def transformar_arxiu(self):
-        df = self.obrir_arxiu()
-        variables = Variables(self.var_arxiu)
-        nom_variables = variables.obtenir_noms_variables()
+
+    def transformar_meteo_arxiu(self):
+        df = self.obrir_meteo_arxiu()
+        nom_variables = self.obtenir_noms_variables()
         estacions = pd.read_csv(self.est_arxiu, usecols=['codi_meteo', 'nom_estacio'])
-        df = df.groupby(self.columns_grup)[self.valor_variables].mean().unstack(self.pivot_column).reset_index()
+        df = df.groupby(self.meteo_columns_grup)[self.var_valors].mean().unstack(self.meteo_pivot_column).reset_index()
         df.rename(nom_variables, axis='columns', inplace=True)
         return df.merge(estacions, left_on='codi_estacio', right_on='codi_meteo')
         
@@ -90,8 +83,8 @@ class Meteo:
 
 
 if __name__ == '__main__':
-    meteo = Meteo(meteo_arxiu='meteo_dataset\meteo_test6.csv', var_arxiu='meteo_dataset/variables_meteo_reduit.csv', est_arxiu='meteo_dataset\estacions_meteo_polucio.csv')
-    test = meteo.transformar_arxiu()
+    meteo = Meteo(meteo_arxiu='datasets\meteo_test6.csv', var_arxiu='datasets/variables_meteo_reduit.csv', est_arxiu='datasets\estacions_meteo_polucio.csv')
+    test = meteo.transformar_meteo_arxiu()
     print(test.head())
 
 
