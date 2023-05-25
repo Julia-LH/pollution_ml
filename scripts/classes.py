@@ -38,7 +38,7 @@ class Polucio:
         mesures_hora = [x.replace(' ', '_').lower() for x in self.mesures_hora]
         variables_agrupacio = [x.replace(' ', '_').lower() for x in self.variables_agrupacio]
         nom_contaminant = self.obtenir_nom_contaminant()
-        df[nom_contaminant] = df[mesures_hora].mean(axis=1)
+        df[nom_contaminant] = df.loc[:, mesures_hora].mean(axis=1)
         return df.drop(variables_agrupacio + mesures_hora, axis=1)
 
     
@@ -77,8 +77,7 @@ class Meteo:
         estacions = pd.read_csv(self.est_arxiu, usecols=['codi_meteo', 'nom_estacio'])
         df = df.groupby(self.meteo_columns_grup)[self.var_valors].mean().unstack(self.meteo_pivot_column).reset_index()
         df.rename(nom_variables, axis='columns', inplace=True)
-        print('longitud de meteo abans de merge amb nom estacio: {}'.format(len(df)))
-        return df.merge(estacions, left_on='codi_estacio', right_on='codi_meteo')
+        return df.merge(estacions, how='right', left_on='codi_estacio', right_on='codi_meteo')
         
 
 
@@ -88,9 +87,12 @@ class Meteo:
 
 
 if __name__ == '__main__':
-    meteo = Meteo(meteo_arxiu='datasets\meteo_test6.csv', var_arxiu='datasets/variables_meteo_reduit.csv', est_arxiu='datasets\estacions_meteo_polucio.csv')
+    meteo = Meteo(meteo_arxiu='datasets\meteo_test8.csv', var_arxiu='datasets/variables_meteo_reduit.csv', est_arxiu='datasets\estacions_meteo_polucio.csv')
     test = meteo.transformar_meteo_arxiu()
-    print(test.head())
+    print(test.info())
+    for r in range(len(test['data_lectura'])):
+        if (test['data_lectura'][r]-test['data_lectura'][r-1])>1:
+            print(r)
 
 
 

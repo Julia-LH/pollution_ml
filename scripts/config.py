@@ -5,6 +5,8 @@ area_geo='municipi'
 nom_area='Barcelona'
 contaminant='NO'
 #meteo
-meteo_arxiu='datasets/meteo_test6.csv'
+meteo_arxiu='datasets/meteo_test8.csv'
 var_arxiu='datasets/variables_meteo_reduit.csv'
 est_arxiu='datasets/estacions_meteo_polucio.csv'
+#model
+training_set='datasets/train_df.csv'
