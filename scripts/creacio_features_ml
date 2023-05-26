@@ -16,6 +16,6 @@ if __name__ == '__main__':
             estacio_df = crear_dies_previs(df=estacio_df, var=var)            
         df_model = pd.concat([df_model, estacio_df], ignore_index=True)
     
-    
+    df_model.to_csv('datasets/df_model.csv', index=False)
     print(df_model.info())
     print(df_model.head())

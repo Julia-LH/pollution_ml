@@ -90,9 +90,7 @@ if __name__ == '__main__':
     meteo = Meteo(meteo_arxiu='datasets\meteo_test8.csv', var_arxiu='datasets/variables_meteo_reduit.csv', est_arxiu='datasets\estacions_meteo_polucio.csv')
     test = meteo.transformar_meteo_arxiu()
     print(test.info())
-    for r in range(len(test['data_lectura'])):
-        if (test['data_lectura'][r]-test['data_lectura'][r-1])>1:
-            print(r)
+    
 
 
 

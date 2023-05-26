@@ -11,15 +11,14 @@ contaminant = polucio.obtenir_nom_contaminant()
 
 meteo = Meteo(meteo_arxiu=meteo_arxiu, var_arxiu=var_arxiu, est_arxiu=est_arxiu)
 meteo_df = meteo.transformar_meteo_arxiu()
-print(meteo_df.info())
 var_list = list(meteo.obtenir_noms_variables().values())
 var_list.append(contaminant)
-df= polucio_df.merge(meteo_df, how='left', left_on=['data', 'nom_estacio'], right_on=['data_lectura', 'nom_estacio'])
-print(df.info())
+df= polucio_df.merge(meteo_df, how='outer', left_on=['data', 'nom_estacio'], right_on=['data_lectura', 'nom_estacio'])
+'''print(df.info())
 print(meteo_df['data_lectura'].min())
 print(meteo_df['data_lectura'].max())
 print(df['data'].min())
-print(df['data'].max())
+print(df['data'].max())'''
 
 train_df = pd.DataFrame()
 test_df = pd.DataFrame()
