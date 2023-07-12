@@ -1,10 +1,13 @@
 import pandas as pd
 from datetime import datetime
+import os.path as path
 
 class Polucio:
 
-    def __init__(self, pol_arxiu, data_inici, area_geo, nom_area, contaminant):
+    def __init__(self, pol_arxiu, data_inici, area_geo, nom_area, contaminant): #csv_path, pol_csv
         self.pol_arxiu = pol_arxiu
+        #self.csv_path = csv_path
+        #self.pol_csv = pol_csv
         self.data_inici = data_inici
         self.area_geo = area_geo
         self.nom_area = nom_area    
@@ -23,6 +26,7 @@ class Polucio:
 
     
     def obrir_pol_arxiu(self):
+        #pol_arxiu = path.join("..", path.relpath(self.csv_path), self.pol_csv)
         date_parser = lambda x:datetime.strptime(x, self.format_data)
         df = pd.read_csv(self.pol_arxiu, usecols=self.columns, parse_dates=[self.data], date_parser=date_parser)
         df.rename(columns=lambda x: x.replace(' ', '_').lower(), inplace=True)
@@ -78,19 +82,9 @@ class Meteo:
         df = df.groupby(self.meteo_columns_grup)[self.var_valors].mean().unstack(self.meteo_pivot_column).reset_index()
         df.rename(nom_variables, axis='columns', inplace=True)
         return df.merge(estacions, how='right', left_on='codi_estacio', right_on='codi_meteo')
+    
         
 
-
-
-
-
-
-
-if __name__ == '__main__':
-    meteo = Meteo(meteo_arxiu='datasets\meteo_test8.csv', var_arxiu='datasets/variables_meteo_reduit.csv', est_arxiu='datasets\estacions_meteo_polucio.csv')
-    test = meteo.transformar_meteo_arxiu()
-    print(test.info())
-    
 
 
 
