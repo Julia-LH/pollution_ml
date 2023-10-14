@@ -3,10 +3,7 @@ import haversine as hs
 import numpy as np
 from sklearn.preprocessing import OrdinalEncoder, Normalizer
 from sklearn.model_selection import GridSearchCV
-from xgboost import XGBRegressor
-from sklearn.linear_model import LinearRegression, Ridge
-from sklearn.ensemble import RandomForestRegressor
-from joblib import dump, load
+from joblib import dump
 
 
 def calcula_distancia(punt_polucio, punts_meteo):
@@ -77,6 +74,7 @@ def fit_transform_dummies(data):
     enc = OrdinalEncoder()
     cat = data.select_dtypes(include=object)
     cat = pd.DataFrame(enc.fit_transform(cat))
+    dump(enc, 'datasets/encoder.joblib')
     return cat, enc
 
 def transform_dummies(data, encoder):
@@ -89,6 +87,7 @@ def fit_transform_num(data):
     scaler = Normalizer().fit(num)
     scaled = scaler.transform(num)
     num = pd.DataFrame(scaled)
+    dump(scaler, 'datasets/scaler.joblib')
     return  num, scaler
 
 def transform_num(data, scaler):
@@ -96,11 +95,8 @@ def transform_num(data, scaler):
     scaled = scaler.transform(num)
     return pd.DataFrame(scaled) 
 
-def grid_search_cv(xtrain, ytrain):
-    models_params = {'LinearRegression': {'name' : LinearRegression(), 'params' : {'n_jobs': [1, 2, 3, 4, 5]}}, 
-                 'XGBRegressor' : {'name':XGBRegressor(), 'params' : {'max_depth':[1, 2, 3, 4, 5, 6], 'eta':[0.1, 0.01, 0.001, 0.0001]}},
-                 'RandomForestRegressor': {'name' : RandomForestRegressor(), 'params' : {'max_depth':[1, 2, 3, 4, 5, 6], 'n_jobs': [1, 2, 3, 4, 5]}},
-                 'Ridge' : {'name' : Ridge(), 'params' : {'max_iter':[1, 2, 3, 4, 5, 6], 'alpha':[0.1, 0.01, 0.001, 0.0001]}}}
+def grid_search_cv(xtrain, ytrain, models_params):
+    models_params = models_params
     results = {'score' : [], 'best_estimator' : []}
     for model in models_params.keys():
         grid = GridSearchCV(estimator=models_params[model]['name'], param_grid=models_params[model]['params'], scoring='r2')
@@ -111,25 +107,28 @@ def grid_search_cv(xtrain, ytrain):
     return best_score, best_estimator
 
 
-def pipeline_processat_train(data, var_list):
+def pipeline_processat_train(data, var_list, model_params):
     data = loop_dies_previs(data=data, var_list=var_list)
     x_train, y_train = split_target(data=data)
     cat, enc = fit_transform_dummies(data=x_train)
     num, scaler = fit_transform_num(data=x_train)
     X = pd.concat([data.data, cat, num], axis=1, ignore_index=True)
     x_train = X.set_index([0], drop=True)
-    best_score, best_estimator = grid_search_cv(xtrain=x_train, ytrain=y_train)
+    best_score, best_estimator = grid_search_cv(xtrain=x_train, ytrain=y_train, models_params=model_params)
+    dump(best_estimator, 'datasets/best_estimator.joblib')
     return x_train, y_train, enc, scaler, best_score, best_estimator
 
-def pipeline_processat_test(data, var_list, encoder, scaler):
+def pipeline_processat_test(data, var_list, encoder, scaler, best_estimator, r2_score):
     data = loop_dies_previs(data=data, var_list=var_list)
     x_test, y_test = split_target(data=data)
     cat = transform_dummies(data=x_test, encoder=encoder)
     num = transform_num(data=x_test, scaler=scaler)
-    X = pd.concat([data.data, cat, num], axis=1, ignore_index=True)
-    return X.set_index([0], drop=True), y_test
+    x_test = pd.concat([data.data, cat, num], axis=1, ignore_index=True)
+    x_test.set_index([0], drop=True, inplace=True)
+    y_pred = best_estimator.predict(x_test)
+    r2_score = r2_score(y_pred, y_test)
+    return r2_score
 
 
-def model_training(x_train, y_train, estimator):
-    estimator.fit(x_train, y_train)
-    dump(estimator, 'model_polucio.joblib')     
+
+   
