@@ -28,4 +28,4 @@ x_train, y_train, enc, scaler, best_score, best_estimator = pipeline_processat_t
 r2score = pipeline_processat_test(data=test_df, var_list=var_list, encoder=enc, scaler=scaler, best_estimator=best_estimator, r2_score=r2_score)
 print(best_estimator)
 print(best_score)
-print(r2_score)
+print(r2score)

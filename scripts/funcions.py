@@ -74,7 +74,7 @@ def fit_transform_dummies(data):
     enc = OrdinalEncoder()
     cat = data.select_dtypes(include=object)
     cat = pd.DataFrame(enc.fit_transform(cat))
-    dump(enc, 'datasets/encoder.joblib')
+    # dump(enc, 'datasets/encoder.joblib')
     return cat, enc
 
 def transform_dummies(data, encoder):
@@ -87,7 +87,7 @@ def fit_transform_num(data):
     scaler = Normalizer().fit(num)
     scaled = scaler.transform(num)
     num = pd.DataFrame(scaled)
-    dump(scaler, 'datasets/scaler.joblib')
+    # dump(scaler, 'datasets/scaler.joblib')
     return  num, scaler
 
 def transform_num(data, scaler):
@@ -115,7 +115,7 @@ def pipeline_processat_train(data, var_list, model_params):
     X = pd.concat([data.data, cat, num], axis=1, ignore_index=True)
     x_train = X.set_index([0], drop=True)
     best_score, best_estimator = grid_search_cv(xtrain=x_train, ytrain=y_train, models_params=model_params)
-    dump(best_estimator, 'datasets/best_estimator.joblib')
+    # dump(best_estimator, 'datasets/best_estimator.joblib')
     return x_train, y_train, enc, scaler, best_score, best_estimator
 
 def pipeline_processat_test(data, var_list, encoder, scaler, best_estimator, r2_score):
@@ -129,6 +129,16 @@ def pipeline_processat_test(data, var_list, encoder, scaler, best_estimator, r2_
     r2_score = r2_score(y_pred, y_test)
     return r2_score
 
+def input_data(est_atrib, date, meteo):
+    
+    df = pd.DataFrame(columns=['nom_estacio', 'tipus_estacio', 'area_urbana', 'altitud', 'latitud', 'longitud'])
+    
 
 
-   
+
+def prediction(data, encoder, scaler, best_estimator):
+    cat = transform_dummies(data=data, encoder=encoder)
+    num = transform_num(data=data, scaler=scaler)
+    X = pd.concat([data.data, cat, num], axis=1, ignore_index=True)
+    X.set_index([0], drop=True, inplace=True)
+    return best_estimator.predict(X)

@@ -27,3 +27,5 @@ models_params = {'LinearRegression': {'name' : LinearRegression(), 'params' : {'
                 'XGBRegressor' : {'name':XGBRegressor(), 'params' : {'max_depth':[1, 2, 3, 4, 5, 6], 'eta':[0.1, 0.01, 0.001, 0.0001]}},
                 'RandomForestRegressor': {'name' : RandomForestRegressor(), 'params' : {'max_depth':[1, 2, 3, 4, 5, 6], 'n_jobs': [1, 2, 3, 4, 5]}},
                 'Ridge' : {'name' : Ridge(), 'params' : {'max_iter':[1, 2, 3, 4, 5, 6], 'alpha':[0.1, 0.01, 0.001, 0.0001]}}}
+
+models_list = ['LinearRegression', 'XGBRegressor', 'RandomForestRegressor', 'Ridge']
